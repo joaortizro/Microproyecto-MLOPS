@@ -1,2 +1,9 @@
 /env
 /data
+/notebooks/.ipynb_checkpoints
+/__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DCS_Store
+.vscode
