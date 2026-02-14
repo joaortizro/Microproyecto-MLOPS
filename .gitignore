@@ -2,9 +2,26 @@
 /data
 /notebooks/.ipynb_checkpoints
 /__pycache__
+**/__pycache__
 *.pyc
 *.pyo
 *.pyd
 .DCS_Store
 .vscode
 .clinerules
+
+# Flask / API
+.env
+instance/
+*.db
+*.sqlite3
+
+# Testing & coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Model artifacts
+*.pkl
+*.joblib
+models/
