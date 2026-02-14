@@ -11,6 +11,8 @@ import os
 
 from flask import Flask
 
+from flasgger import Swagger
+
 from app.config import get_config
 from app.extensions import cors, db
 
@@ -61,6 +63,42 @@ def _init_extensions(app: Flask) -> None:
     cors.init_app(
         app,
         resources={r"/*": {"origins": app.config.get("CORS_ORIGINS", [])}},
+    )
+    Swagger(
+        app,
+        template={
+            "info": {
+                "title": "E-commerce Customer Satisfaction API",
+                "version": app.config.get("API_VERSION", "1.0.0"),
+                "description": """
+## Overview
+REST API for predicting and analyzing customer satisfaction in e-commerce orders.
+Given order data — delivery times, shipping costs, geography, and review text —
+the model identifies the key drivers behind negative reviews (1–2 stars).
+
+## Dataset
+Powered by the [Olist Brazilian E-Commerce dataset](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce),
+a real-world dataset of 100k orders from 2016–2018. Used strictly for academic and research purposes.
+
+## Response Format
+All endpoints return a standard envelope:
+```json
+{
+  "data": {},
+  "status": "ok | error",
+  "timestamp": "ISO 8601"
+}
+```
+
+## Disclaimer
+This API is built for educational purposes as part of a Master's degree MLOps project.
+Predictions are probabilistic and should not be used for production business decisions.
+""",
+            },
+            "tags": [
+                {"name": "Health", "description": "Liveness and model metadata"},
+            ],
+        },
     )
 
 
