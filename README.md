@@ -114,7 +114,3 @@ python -m pytest tests/ -v
   "timestamp": "2024-01-13T00:00:00+00:00"
 }
 ```
-
----
-
-> For educational purposes only. Model predictions are probabilistic and not intended for production use.
