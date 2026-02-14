@@ -7,8 +7,10 @@ Endpoints:
 """
 
 import logging
+import os
 from typing import Any
 
+from flasgger import swag_from
 from flask import Blueprint, current_app
 
 from app.utils.responses import error_response, success_response
@@ -17,19 +19,13 @@ logger = logging.getLogger(__name__)
 
 health_bp = Blueprint("health", __name__)
 
+_SWAGGER = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "swagger")
+
 
 @health_bp.route("/health", methods=["GET"])
+@swag_from(os.path.join(_SWAGGER, "health_check.yml"))
 def health_check() -> tuple[Any, int]:
-    """
-    API liveness check.
-
-    Returns:
-        200 with health payload, or 500 if the app is misconfigured.
-
-    Example:
-        >>> GET /health
-        {"data": {"status": "healthy", "version": "1.0.0", ...}, "status": "ok", ...}
-    """
+    """API liveness check."""
     try:
         payload = {
             "status": "healthy",
@@ -44,17 +40,9 @@ def health_check() -> tuple[Any, int]:
 
 
 @health_bp.route("/model/info", methods=["GET"])
+@swag_from(os.path.join(_SWAGGER, "model_info.yml"))
 def model_info() -> tuple[Any, int]:
-    """
-    Model metadata endpoint (stub — wired to real model in PR-10).
-
-    Returns:
-        200 with model metadata placeholder.
-
-    Example:
-        >>> GET /model/info
-        {"data": {"model_name": "pending", "status": "not_loaded", ...}, "status": "ok", ...}
-    """
+    """Model metadata — stub until PR-10."""
     try:
         payload = {
             "model_name": "olist-review-predictor",

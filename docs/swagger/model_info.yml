@@ -1,0 +1,35 @@
+tags:
+  - Health
+summary: Model metadata (stub until PR-10)
+responses:
+  200:
+    description: Model metadata
+    schema:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        data:
+          type: object
+          properties:
+            model_name:
+              type: string
+              example: olist-review-predictor
+            version:
+              type: string
+              example: pending
+            status:
+              type: string
+              example: not_loaded
+            metrics:
+              type: object
+            features:
+              type: array
+              items:
+                type: string
+        timestamp:
+          type: string
+          example: "2024-01-01T00:00:00+00:00"
+  500:
+    description: Could not retrieve model info
