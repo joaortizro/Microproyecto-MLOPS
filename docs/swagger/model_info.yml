@@ -1,6 +1,6 @@
 tags:
   - Health
-summary: Model metadata (stub until PR-10)
+summary: Model metadata
 responses:
   200:
     description: Model metadata
