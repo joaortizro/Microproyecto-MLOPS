@@ -9,7 +9,7 @@ Built on the [Olist Brazilian E-Commerce dataset](https://www.kaggle.com/dataset
 ## Setup
 
 ```bash
-git clone <repo-url>
+git clone [<repo-url>](https://github.com/joaortizro/Microproyecto-MLOPS.git)
 cd Microproyecto-MLOPS
 
 python -m venv env
