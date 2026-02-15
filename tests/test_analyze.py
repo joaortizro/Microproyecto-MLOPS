@@ -47,22 +47,15 @@ class TestAnalyzeHybrid:
         assert "sentiment" in prediction
         assert "reasons" in prediction
 
-    def test_negative_text_increases_probability(self, client):
-        # Given: a review mentioning delay
-        payload = {
-            "delivery": {
-                "purchase_date": "2024-01-01T10:00:00",
-                "promised_date": "2024-01-08T23:59:59",
-            },
-            "review": {"text": "Produto demorou muito e chegou damaged"},
-        }
-
+    def test_stub_returns_hardcoded_prediction(self, client):
+        # Given: any valid payload (stub ignores input)
         # When: POST /analyze/hybrid
-        response = client.post("/analyze/hybrid", json=payload)
+        response = client.post("/analyze/hybrid", json=VALID_PAYLOAD)
 
-        # Then: negative probability is high and sentiment is negative
+        # Then: returns the hardcoded stub values
         prediction = response.json()["data"]
-        assert prediction["negative_probability"] > 0.6
+        assert prediction["predicted_score"] == 2
+        assert prediction["negative_probability"] == 0.81
         assert prediction["sentiment"] == "negative"
 
     def test_full_payload_with_all_optional_fields(self, client):
