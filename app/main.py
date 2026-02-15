@@ -87,9 +87,7 @@ def _add_middleware(app: FastAPI, settings: object) -> None:
 
 def _register_routers(app: FastAPI) -> None:
     """Register all application routers."""
-    from app.routers.health import router as health_router
-
-    app.include_router(health_router)
+    pass
 
 
 app = create_app()
