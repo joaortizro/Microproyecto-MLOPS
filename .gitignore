@@ -25,3 +25,12 @@ htmlcov/
 *.pkl
 *.joblib
 models/
+
+# Logs
+logs/
+*.log
+*.tox
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/    
+
