@@ -1,18 +1,14 @@
-"""
-Application entry point for local development.
+"""Development server entry point."""
 
-Production: use gunicorn — `gunicorn "app:create_app()" --bind 0.0.0.0:8000`
-"""
+import uvicorn
 
-import os
-
-from app import create_app
-
-app = create_app(os.environ.get("FLASK_ENV", "development"))
+from app.config import get_settings
 
 if __name__ == "__main__":
-    app.run(
-        host=os.environ.get("FLASK_HOST", "0.0.0.0"),
-        port=int(os.environ.get("FLASK_PORT", "5000")),
-        debug=app.debug,
+    settings = get_settings()
+    uvicorn.run(
+        "app.main:app",
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=settings.DEBUG,
     )

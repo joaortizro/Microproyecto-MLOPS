@@ -1,56 +1,71 @@
 """
-Application configuration classes.
+Application configuration using pydantic-settings.
 
 Supports three environments: development, production, testing.
 Production validates that required env vars are set at startup.
 """
 
-import logging
-import os
+from functools import lru_cache
 
-logger = logging.getLogger(__name__)
-
-
-class Config:
-    """Base configuration shared across all environments."""
-
-    SECRET_KEY: str = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
-    SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
-    API_VERSION: str = "1.0.0"
-    CORS_ORIGINS: list[str] = os.environ.get(
-        "CORS_ORIGINS", "http://localhost:3000"
-    ).split(",")
-
-    @classmethod
-    def validate(cls) -> None:
-        """Validate that required config values are present."""
-        pass
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class DevelopmentConfig(Config):
-    """Development configuration — SQLite, debug on."""
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
 
-    DEBUG: bool = True
-    TESTING: bool = False
-    SQLALCHEMY_DATABASE_URI: str = os.environ.get(
-        "DATABASE_URL", "sqlite:///olist_dev.db"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
     )
 
+    # General
+    PROJECT_NAME: str = "E-commerce Customer Satisfaction API"
+    API_VERSION: str = "1.0.0"
+    ENVIRONMENT: str = "development"  # development | production | testing
 
-class ProductionConfig(Config):
-    """Production configuration — requires DATABASE_URL and SECRET_KEY env vars."""
+    # Security
+    SECRET_KEY: str = "dev-secret-change-in-production"
 
+    # Database
+    DATABASE_URL: str = "sqlite:///olist_dev.db"
+
+    # CORS
+    CORS_ORIGINS: list[str] = ["http://localhost:3000"]
+
+    # Server
+    HOST: str = "0.0.0.0"
+    PORT: int = 8000
     DEBUG: bool = False
-    TESTING: bool = False
-    SQLALCHEMY_DATABASE_URI: str = os.environ.get("DATABASE_URL", "")
 
-    @classmethod
-    def validate(cls) -> None:
-        """Raise EnvironmentError if required production secrets are missing."""
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT == "production"
+
+    @property
+    def is_testing(self) -> bool:
+        return self.ENVIRONMENT == "testing"
+
+
+class DevelopmentSettings(Settings):
+    """Development defaults."""
+
+    ENVIRONMENT: str = "development"
+    DEBUG: bool = True
+    DATABASE_URL: str = "sqlite:///olist_dev.db"
+
+
+class ProductionSettings(Settings):
+    """Production — validates required env vars."""
+
+    ENVIRONMENT: str = "production"
+    DEBUG: bool = False
+
+    def model_post_init(self, __context: object) -> None:
         missing: list[str] = []
-        if not os.environ.get("DATABASE_URL"):
+        if self.DATABASE_URL.startswith("sqlite"):
             missing.append("DATABASE_URL")
-        if not os.environ.get("SECRET_KEY"):
+        if self.SECRET_KEY == "dev-secret-change-in-production":
             missing.append("SECRET_KEY")
         if missing:
             raise EnvironmentError(
@@ -58,42 +73,23 @@ class ProductionConfig(Config):
             )
 
 
-class TestingConfig(Config):
-    """Testing configuration — in-memory SQLite, CSRF disabled."""
+class TestingSettings(Settings):
+    """Testing — in-memory SQLite."""
 
-    TESTING: bool = True
+    ENVIRONMENT: str = "testing"
     DEBUG: bool = True
-    SQLALCHEMY_DATABASE_URI: str = "sqlite:///:memory:"
-    WTF_CSRF_ENABLED: bool = False
+    DATABASE_URL: str = "sqlite:///test.db"
 
 
-_CONFIG_MAP: dict[str, type[Config]] = {
-    "development": DevelopmentConfig,
-    "production": ProductionConfig,
-    "testing": TestingConfig,
+_SETTINGS_MAP: dict[str, type[Settings]] = {
+    "development": DevelopmentSettings,
+    "production": ProductionSettings,
+    "testing": TestingSettings,
 }
 
 
-def get_config(env: str = "development") -> type[Config]:
-    """
-    Return the configuration class for the given environment name.
-
-    Args:
-        env: One of 'development', 'production', 'testing'.
-
-    Returns:
-        A Config subclass (not an instance).
-
-    Example:
-        >>> cfg = get_config("testing")
-        >>> cfg.TESTING
-        True
-    """
-    config = _CONFIG_MAP.get(env)
-    if config is None:
-        logger.warning(
-            "Unknown environment requested, defaulting to development",
-            extra={"requested_env": env},
-        )
-        return DevelopmentConfig
-    return config
+@lru_cache
+def get_settings(env: str = "development") -> Settings:
+    """Return a cached Settings instance for the given environment."""
+    settings_class = _SETTINGS_MAP.get(env, DevelopmentSettings)
+    return settings_class()
