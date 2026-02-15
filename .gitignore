@@ -30,6 +30,9 @@ models/
 logs/
 *.log
 *.tox
+.tox/
+.DS_Store
+*.whl
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/    
