@@ -1,10 +1,10 @@
 import type { DemoRunStatus } from "../types/demo";
 
 const stylesByStatus: Record<DemoRunStatus, string> = {
-  queued: "bg-zinc-900 text-zinc-200 border-zinc-700",
-  running: "bg-blue-950/50 text-blue-200 border-blue-900",
-  completed: "bg-emerald-950/50 text-emerald-200 border-emerald-900",
-  failed: "bg-red-950/50 text-red-200 border-red-900",
+  queued: "bg-zinc-50 text-zinc-700 border-zinc-200",
+  running: "bg-blue-50 text-blue-700 border-blue-200",
+  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  failed: "bg-red-50 text-red-700 border-red-200",
 };
 
 export function StatusPill({ status }: { status: DemoRunStatus }) {

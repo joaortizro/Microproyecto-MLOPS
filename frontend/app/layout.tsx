@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 
-import { Navbar } from "../components/Navbar";
-import { Container } from "../components/Container";
+// import { AppShell } from "../components/AppShell";
+import AppShell from "../components/AppShell";
 
 export const metadata: Metadata = {
   title: {
@@ -16,20 +16,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es">
-      <body className="min-h-dvh bg-black text-zinc-100 antialiased">
-        <Navbar />
-
-        <main className="py-10">
-          <Container>{children}</Container>
-        </main>
-
-        <footer className="border-t border-zinc-800 py-6">
-          <Container>
-            <p className="text-xs text-zinc-400">
-              © {new Date().getFullYear()} Microproyecto-MLOPS · Demo UI
-            </p>
-          </Container>
-        </footer>
+      <body className="overflow-hidden">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
