@@ -1,0 +1,59 @@
+package_name: olist_review_model
+
+# --- Data ---
+data_dir: ../data
+data_files:
+  reviews: olist_order_reviews_dataset.csv
+  orders: olist_orders_dataset.csv
+  customers: olist_customers_dataset.csv
+  order_items: olist_order_items_dataset.csv
+  sellers: olist_sellers_dataset.csv
+  products: olist_products_dataset.csv
+  categories: product_category_name_translation.csv
+  geolocation: olist_geolocation_dataset.csv
+  payments: olist_order_payments_dataset.csv
+
+# --- Target ---
+target: is_negative
+negative_threshold: 2  # review_score <= 2 is negative
+
+# --- Features ---
+features:
+  # Logístico
+  - delivery_delta_days
+  - seller_dispatch_days
+  - carrier_transit_days
+  - distance_seller_customer_km
+  # Financiero
+  - price
+  - freight_value
+  - payment_value
+  - payment_installments
+  # Producto
+  - product_weight_g
+  - product_description_lenght
+  - product_photos_qty
+  # Texto de reseña
+  - char_count
+  - word_count
+  - exclamation_count
+  - question_count
+  - avg_word_length
+
+# --- Model hyperparameters ---
+# Estos son los hiperparámetros para el modelo XGBoost.
+# Son resultado de MLflow
+hyperparameters:
+  n_estimators: 1500
+  max_depth: 12
+  learning_rate: 0.1
+  eval_metric: auc
+  random_state: 42
+
+# --- Train/Test split ---
+test_size: 0.2
+random_state: 42
+
+# --- Paths ---
+pipeline_save_file: olist_review_model_v
+trained_model_file: olist_xgb_model.ubj

@@ -96,6 +96,90 @@ python -m pytest tests/ -v
 }
 ```
 
+---
+
+## ML Model Training & Packaging
+
+### Quick Start (Model A: Negative Review Classifier)
+
+```bash
+cd package-model
+
+# 1. Train the model
+tox run -e train
+
+# 2. Run tests
+tox run -e test_package
+
+# 3. Build distributable package
+pip install build
+python -m build
+# → dist/olist_review_model-0.1.0.tar.gz
+# → dist/olist_review_model-0.1.0-py3-none-any.whl
+
+# 4. Install the package
+pip install dist/olist_review_model-0.1.0-py3-none-any.whl
+```
+
+### MLflow Experiments
+
+```bash
+# Start MLflow server
+mlflow server -h 0.0.0.0 -p 5000
+
+# Run experiments with different hyperparameters
+cd notebooks
+python train_model_a.py 1500 12 0.1
+python train_model_a.py 1000 8 0.05
+
+# Compare at http://localhost:5000
+```
+
+### Package Structure
+
+```
+package-model/
+├── olist_review_model/
+│   ├── config/config.yml        # Features, hyperparameters
+│   ├── pipeline.py              # Feature engineering
+│   ├── train_pipeline.py        # Training script
+│   ├── predict.py               # Prediction logic
+│   ├── processing/validation.py # Input validation schemas
+│   └── trained_models/          # Trained model (not in git)
+├── tests/                       # Unit tests
+├── requirements/                # Dependencies
+├── setup.py
+├── tox.ini                      # tox run -e train | test_package
+└── VERSION
+```
+
+### Adding a New Model
+
+To add a new model (e.g., LightGBM for returns prediction):
+
+1. **Experiment** in a new notebook: `notebooks/modelB_<name>.ipynb`
+2. **Create a new package** by copying the structure:
+   ```bash
+   cp -r package-model package-model-b
+   ```
+3. **Rename** the Python package inside:
+   - `package-model-b/olist_returns_model/` (rename the folder)
+   - Update `setup.py`: `name = "olist_returns_model"`
+   - Update `config/config.yml` with new features and hyperparameters
+4. **Implement** your model logic in `train_pipeline.py`, `predict.py`, and `pipeline.py`
+5. **Update** `processing/validation.py` with your input schema
+6. **Train & test**:
+   ```bash
+   cd package-model-b
+   tox run -e train
+   tox run -e test_package
+   python -m build
+   ```
+
+Each model is an independent package with its own version, dependencies, and lifecycle.
+
+---
+
 **Response**
 
 ```json
