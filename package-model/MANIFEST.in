@@ -1,0 +1,5 @@
+include VERSION
+include requirements/requirements.txt
+include requirements/test_requirements.txt
+recursive-include olist_review_model *.py *.yml *.yaml
+recursive-include olist_review_model/trained_models *
