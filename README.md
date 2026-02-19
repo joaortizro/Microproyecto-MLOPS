@@ -44,20 +44,8 @@ python -m pytest tests/ -v
 |--------|----------|-------------|
 | GET | `/health` | API liveness check |
 | GET | `/model/info` | Model metadata |
-| POST | `/analyze/text` | Sentiment from review text only |
-| POST | `/analyze/order` | Prediction from order data only |
 | POST | `/analyze/hybrid` | Order + text — best accuracy |
-| GET | `/reviews` | Paginated review list |
-| GET | `/reviews/{id}` | Review detail + reasons |
-| GET | `/reviews/search` | Full-text search |
-| GET | `/insights/top-issues` | Top negative drivers |
-| GET | `/insights/summary` | KPIs |
-| GET | `/insights/by-category` | Breakdown by product |
-| GET | `/insights/by-region` | Breakdown by geography |
-| GET | `/insights/delivery-impact` | Delay vs score |
-| GET | `/dashboard/metrics` | Model performance |
-| GET | `/dashboard/score-distribution` | Star rating distribution |
-| GET | `/dashboard/sentiment-trend` | Time series sentiment |
+
 
 ---
 
@@ -155,7 +143,7 @@ package-model/
 
 ### Adding a New Model
 
-To add a new model (e.g., LightGBM for returns prediction):
+To add a new model :
 
 1. **Experiment** in a new notebook: `notebooks/modelB_<name>.ipynb`
 2. **Create a new package** by copying the structure:
