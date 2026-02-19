@@ -24,16 +24,33 @@ htmlcov/
 # Model artifacts
 *.pkl
 *.joblib
+*.ubj
 models/
 
 # Logs
 logs/
 *.log
-*.tox
-.tox/
 .DS_Store
+
+# Build artifacts
 *.whl
+*.tar.gz
+dist/
+build/
+*.egg-info/
+.tox/
+
+# MLflow
+mlruns/
+
+# Model artifacts (large binary)
+model_artifacts/
+
+# Package model: trained models (binary, not in git)
+package-model/olist_review_model/trained_models/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/    
 
+#pdf
+*.pdf
