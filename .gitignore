@@ -1,7 +1,12 @@
-.venv/
-venv/
-mlartifacts/
-mlflow.db
-__pycache__/
-*.pyc
-.DS_Store
+# Ignorar cosas del grupo
+/env
+/data
+/__pycache__
+*.db
+
+# Ignoradas de Milton
+versionMilton/venv/
+versionMilton/.venv/
+versionMilton/mlartifacts/
+versionMilton/mlflow.db
+versionMilton/__pycache__/
