@@ -47,16 +47,16 @@ class TestAnalyzeHybrid:
         assert "sentiment" in prediction
         assert "reasons" in prediction
 
-    def test_stub_returns_hardcoded_prediction(self, client):
-        # Given: any valid payload (stub ignores input)
+    def test_prediction_values_are_in_valid_range(self, client):
+        # Given: a valid payload
         # When: POST /analyze/hybrid
         response = client.post("/analyze/hybrid", json=VALID_PAYLOAD)
 
-        # Then: returns the hardcoded stub values
+        # Then: model returns values within expected ranges
         prediction = response.json()["data"]
-        assert prediction["predicted_score"] == 2
-        assert prediction["negative_probability"] == 0.81
-        assert prediction["sentiment"] == "negative"
+        assert prediction["predicted_score"] in (1, 5)
+        assert 0.0 <= prediction["negative_probability"] <= 1.0
+        assert prediction["sentiment"] in ("negative", "positive")
 
     def test_full_payload_with_all_optional_fields(self, client):
         # Given: a payload with all fields populated
