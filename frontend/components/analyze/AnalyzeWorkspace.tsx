@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { AnalyzePayload, OrderInput, OrderStatus, PaymentType } from "../../types/order";
 import type { Prediction } from "../../types/prediction";
 import { mockPredict } from "../../lib/mockPredict";
@@ -8,6 +8,8 @@ import { PredictionGrid } from "./PredictionGrid";
 import { StarRating } from "./StarRating";
 import { JsonPanel } from "./JsonPanel";
 import { PredictionList } from "./PredictionList";
+import BrandMark from "../../components/BrandMark";
+import { FiChevronDown, FiCode, FiSend } from "react-icons/fi";
 
 function emptyOrder(): OrderInput {
   return {
@@ -109,6 +111,18 @@ export function AnalyzeWorkspace() {
   return (
     <div className="relative">
       {/* JSON flotante (no empuja el layout) */}
+      <div
+        aria-hidden="true"
+        className={[
+          "pointer-events-none absolute inset-0 z-0",
+          "opacity-70",
+          // más separados: 56px (sube/baja a gusto)
+          "bg-[repeating-radial-gradient(circle_at_center,rgba(24,24,27,0.07)_0,rgba(24,24,27,0.07)_1px,transparent_1px,transparent_56px)]",
+          // fade suave en bordes
+          "[mask-image:radial-gradient(circle_at_center,black_52%,transparent_100%)]",
+        ].join(" ")}
+      />
+
       <div className="fixed right-6 top-6 z-40 hidden w-[360px] lg:block">
         {!jsonOpen ? (
           <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
@@ -128,21 +142,40 @@ export function AnalyzeWorkspace() {
       </div>
 
       {/* MAIN centrado */}
-      <div className="mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-3xl flex-col">
+      <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-3xl flex-col">
+
         {/* Results */}
         {!isEmpty ? (
           <div className="mb-6">
             <PredictionList orders={orders} predictions={predictions ?? []} />
           </div>
         ) : (
+
           <div className="flex flex-1 items-center justify-center">
+
             <div className="w-full">
-              {/* Título fuera del container */}
-              <div className="mb-4 text-center">
-                <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">Escribe tu orden</h1>
-                <p className="mt-1 text-sm text-zinc-600">
-                  Pega un JSON o completa el formulario y presiona <span className="font-semibold">Send</span>.
-                </p>
+              {/* Header con logo + fondo de círculos */}
+              <div className="relative mb-6 text-center">
+
+
+                <div className="relative">
+                  {/* Logo arriba */}
+                  <div className="mx-auto mb-3 grid w-fit place-items-center">
+                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-[rgba(188,150,230,0.16)] text-[var(--color-purple)] ring-1 ring-black/5">
+                      <BrandMark className="h-6 w-6" />
+                    </div>
+                  </div>
+
+                  {/* Título: dark purple */}
+                  <h1 className="text-2xl font-semibold tracking-tight text-[var(--color-dark-purple)]">
+                    Escribe tu orden
+                  </h1>
+
+                  <p className="mt-1 text-sm text-zinc-600">
+                    Pega un JSON o completa el formulario y presiona{" "}
+                    <span className="font-semibold text-[var(--color-dark-purple)]">Send</span>.
+                  </p>
+                </div>
               </div>
 
               <Composer
@@ -204,219 +237,224 @@ function Composer(props: {
 
   const canRemove = orders.length > 1;
 
+  const taRef = useRef<HTMLTextAreaElement | null>(null);
+
+  function syncTextarea(el: HTMLTextAreaElement) {
+    const MIN = 40;
+    const MAX = 180;
+
+    el.style.height = "0px";
+    const next = Math.max(MIN, Math.min(el.scrollHeight, MAX));
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > MAX ? "auto" : "hidden";
+  }
+
+  useLayoutEffect(() => {
+    if (taRef.current) syncTextarea(taRef.current);
+    // cuando cambias de orden o se actualiza el texto, recalcula altura
+  }, [active.review_comment_message, activeIndex]);
+
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white shadow-sm">
-      {/* Textarea */}
-      <div className="px-5 pt-5">
-        <textarea
-          value={active.review_comment_message}
-          onChange={(e) => onUpdateActive({ review_comment_message: e.target.value })}
-          placeholder="Escribe el comentario del review..."
-          className="min-h-[120px] w-full resize-y rounded-2xl bg-zinc-50 p-4 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-        />
-      </div>
+    <div className="space-y-0">
+      {/* Sección A: comentario + estrellas + acciones */}
+      <div className="relative z-40 rounded-3xl border border-zinc-200 bg-white shadow-sm">
+        {/* Textarea */}
+        <div className="px-4 pt-4">
+          <textarea
+            ref={taRef}
+            value={active.review_comment_message}
+            onChange={(e) => onUpdateActive({ review_comment_message: e.target.value })}
+            onInput={(e) => syncTextarea(e.currentTarget)}
+            placeholder="Escribe el comentario del review..."
+            className={[
+              "w-full rounded-2xl",
+              "bg-transparent p-3 text-sm text-zinc-900",
+              "resize-none", // quita el handle de expandir
+              "outline-none focus:outline-none", // sin borde/outline del navegador
+              "focus:ring-0", // por si algo agrega ring
+            ].join(" ")}
+          />
+        </div>
 
-      {/* Row: estrellas izquierda | Agregar JSON + Send derecha */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-3">
-        <StarRating value={active.review_score} onChange={(v) => onUpdateActive({ review_score: v })} />
+        {/* Row: estrellas izquierda | Ver JSON + Send derecha */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 pt-3">
+          <StarRating value={active.review_score} onChange={(v) => onUpdateActive({ review_score: v })} />
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onOpenJson}
-            className="rounded-xl border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
-          >
-            Agregar JSON
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onOpenJson}
+              className={[
+                "inline-flex h-9 items-center gap-2 rounded-xl px-4",
+                "text-xs font-semibold text-[var(--color-dark-purple)]",
+                "transition-colors",
+                "hover:bg-[var(--color-purple-soft-12)] active:bg-[var(--color-purple-soft-16)]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-purple-soft-16)]",
+                "focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+              ].join(" ")}
+              aria-label="Ver JSON"
+              title="Ver JSON"
+            >
+              <FiCode className="h-4 w-4 text-[var(--color-purple)]" />
+              <span>Ver JSON</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={onSend}
-            className="rounded-xl bg-zinc-900 px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800"
-          >
-            Send
-          </button>
+            <button
+              type="button"
+              onClick={onSend}
+              className={[
+                "grid h-10 w-10 place-items-center rounded-full",
+                "bg-[var(--color-purple)] text-[var(--color-dark-purple)] shadow-sm",
+                "transition-colors hover:brightness-95 active:brightness-90",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-purple-soft-16)]",
+                "focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+              ].join(" ")}
+              aria-label="Send"
+              title="Send"
+            >
+              <FiSend className="h-4.5 w-4.5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Acordeón compacto */}
-      <div className="px-5 pb-5 pt-3">
-        <details className="mt-2">
-          <summary className="mx-auto w-fit cursor-pointer select-none rounded-full px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50">
-            Detalles de órdenes
+      {/* Sección B: Detalles (contenedor separado) */}
+      <div className="relative z-10 -mt-8 overflow-hidden rounded-3xl rounded-tl-none rounded-tr-none bg-[var(--color-purple)] shadow-sm">
+        <details className="group">
+          <summary
+            className={[
+              // que sea un bloque “grande” clickeable
+              "block w-full cursor-pointer select-none list-none",
+              "[&::-webkit-details-marker]:hidden",
+              "focus:outline-none",
+              // padding/altura del header morado (ajusta a gusto)
+              "px-4 pb-4 pt-10 text-center",
+              // hover/active sutil para indicar clic
+              "transition-colors hover:bg-white/10 active:bg-white/15",
+            ].join(" ")}
+          >
+            <div className="flex items-center justify-center gap-3">
+        
+              <p className="text-xs text-[rgba(33,11,44,0.78)]">
+                Haz clic aquí para abrir y editar los detalles de tu orden
+              </p>
+            </div>
           </summary>
 
-          <div className="mt-4 space-y-4">
-            {/* Orden selector + add/remove */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-zinc-700">Orden</span>
-                <div className="flex gap-1">
-                  {orders.map((_, idx) => (
+          <div className="px-4 pb-4">
+            {/* Panel interno blanco para mantener tus fields sin re-estilizarlos */}
+            <div
+  className={[
+    "!block", 
+    "grid grid-rows-[0fr]",
+    "transition-[grid-template-rows] duration-300 ease-out",
+    "group-open:grid-rows-[1fr]",
+    "motion-reduce:transition-none",
+  ].join(" ")}
+>
+  <div className="overflow-hidden">
+    <div
+      className={[
+        "px-4 pb-4",
+        "transition-opacity duration-200 ease-out",
+        "opacity-0 group-open:opacity-100",
+        "motion-reduce:transition-none motion-reduce:opacity-100",
+      ].join(" ")}
+    >
+            <div className="rounded-2xl bg-white p-4">
+              {/* 👇 Pega aquí tu contenido actual de detalles tal cual */}
+              <div className="space-y-4">
+                {/* Orden selector + add/remove */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-zinc-700">Orden</span>
+                    <div className="flex gap-1">
+                      {orders.map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => onSetActiveIndex(idx)}
+                          className={[
+                            "rounded-xl px-3 py-1.5 text-xs font-semibold",
+                            idx === activeIndex
+                              ? "bg-zinc-900 text-white"
+                              : "border border-zinc-200 text-zinc-700 hover:bg-zinc-50",
+                          ].join(" ")}
+                        >
+                          {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
                     <button
-                      key={idx}
                       type="button"
-                      onClick={() => onSetActiveIndex(idx)}
+                      onClick={onAddOrder}
+                      className="rounded-xl border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                    >
+                      + Agregar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onRemoveActiveOrder}
+                      disabled={!canRemove}
                       className={[
                         "rounded-xl px-3 py-1.5 text-xs font-semibold",
-                        idx === activeIndex
-                          ? "bg-zinc-900 text-white"
-                          : "border border-zinc-200 text-zinc-700 hover:bg-zinc-50",
+                        canRemove
+                          ? "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                          : "cursor-not-allowed border border-zinc-100 text-zinc-300",
                       ].join(" ")}
                     >
-                      {idx + 1}
+                      Quitar
                     </button>
-                  ))}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={onAddOrder}
-                  className="rounded-xl border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
-                >
-                  + Agregar
-                </button>
-                <button
-                  type="button"
-                  onClick={onRemoveActiveOrder}
-                  disabled={!canRemove}
-                  className={[
-                    "rounded-xl px-3 py-1.5 text-xs font-semibold",
-                    canRemove
-                      ? "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-                      : "cursor-not-allowed border border-zinc-100 text-zinc-300",
-                  ].join(" ")}
-                >
-                  Quitar
-                </button>
+                {/* Selects */}
+                <div className="grid gap-3 md:grid-cols-2">
+                  <SelectField
+                    label="Tipo de pago"
+                    value={active.payment_type ?? "unknown"}
+                    options={[
+                      { value: "unknown", label: "Desconocido" },
+                      { value: "credit_card", label: "Tarjeta de crédito" },
+                      { value: "boleto", label: "Boleto" },
+                      { value: "debit_card", label: "Tarjeta débito" },
+                      { value: "pix", label: "Pix" },
+                    ]}
+                    onChange={(v) => onUpdateActive({ payment_type: v as PaymentType })}
+                  />
+
+                  <SelectField
+                    label="Estado del pedido"
+                    value={active.order_status}
+                    options={[
+                      { value: "unknown", label: "Desconocido" },
+                      { value: "created", label: "Creado" },
+                      { value: "approved", label: "Aprobado" },
+                      { value: "processing", label: "Procesando" },
+                      { value: "shipped", label: "Enviado" },
+                      { value: "delivered", label: "Entregado" },
+                      { value: "canceled", label: "Cancelado" },
+                    ]}
+                    onChange={(v) => onUpdateActive({ order_status: v as OrderStatus })}
+                  />
+                </div>
+
+                {/* Advanced */}
+                <details className="rounded-2xl border border-zinc-200 p-3">
+                  <summary className="cursor-pointer select-none text-sm font-semibold text-zinc-900 hover:text-zinc-950">
+                    Advanced fields
+                  </summary>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    {/* ...tu contenido actual igual... */}
+                  </div>
+                </details>
               </div>
             </div>
-
-            {/* Selects */}
-            <div className="grid gap-3 md:grid-cols-2">
-              <SelectField
-                label="Tipo de pago"
-                value={active.payment_type ?? "unknown"}
-                options={[
-                  { value: "unknown", label: "Desconocido" },
-                  { value: "credit_card", label: "Tarjeta de crédito" },
-                  { value: "boleto", label: "Boleto" },
-                  { value: "debit_card", label: "Tarjeta débito" },
-                  { value: "pix", label: "Pix" },
-                ]}
-                onChange={(v) => onUpdateActive({ payment_type: v as PaymentType })}
-              />
-
-              <SelectField
-                label="Estado del pedido"
-                value={active.order_status}
-                options={[
-                  { value: "unknown", label: "Desconocido" },
-                  { value: "created", label: "Creado" },
-                  { value: "approved", label: "Aprobado" },
-                  { value: "processing", label: "Procesando" },
-                  { value: "shipped", label: "Enviado" },
-                  { value: "delivered", label: "Entregado" },
-                  { value: "canceled", label: "Cancelado" },
-                ]}
-                onChange={(v) => onUpdateActive({ order_status: v as OrderStatus })}
-              />
-            </div>
-
-            {/* Advanced */}
-            <details className="rounded-2xl border border-zinc-200 p-3">
-              <summary className="cursor-pointer select-none text-sm font-semibold text-zinc-900 hover:text-zinc-950">
-                Advanced fields
-              </summary>
-
-              <div className="mt-4 grid gap-3 md:grid-cols-2">
-                <TextField
-                  label="order_purchase_timestamp"
-                  value={active.order_purchase_timestamp ?? ""}
-                  onChange={(v) => onUpdateActive({ order_purchase_timestamp: v || null })}
-                  placeholder="YYYY-MM-DD HH:MM:SS"
-                />
-                <TextField
-                  label="order_estimated_delivery_date"
-                  value={active.order_estimated_delivery_date ?? ""}
-                  onChange={(v) => onUpdateActive({ order_estimated_delivery_date: v || null })}
-                  placeholder="YYYY-MM-DD HH:MM:SS"
-                />
-                <TextField
-                  label="order_approved_at"
-                  value={active.order_approved_at ?? ""}
-                  onChange={(v) => onUpdateActive({ order_approved_at: v || null })}
-                  placeholder="YYYY-MM-DD HH:MM:SS"
-                />
-                <TextField
-                  label="shipping_limit_date"
-                  value={active.shipping_limit_date ?? ""}
-                  onChange={(v) => onUpdateActive({ shipping_limit_date: v || null })}
-                  placeholder="YYYY-MM-DD HH:MM:SS"
-                />
-
-                <TextField
-                  label="order_delivered_carrier_date"
-                  value={active.order_delivered_carrier_date ?? ""}
-                  onChange={(v) => onUpdateActive({ order_delivered_carrier_date: v || null })}
-                  placeholder="YYYY-MM-DD HH:MM:SS"
-                />
-                <TextField
-                  label="order_delivered_customer_date"
-                  value={active.order_delivered_customer_date ?? ""}
-                  onChange={(v) => onUpdateActive({ order_delivered_customer_date: v || null })}
-                  placeholder="YYYY-MM-DD HH:MM:SS"
-                />
-
-                <NumberField
-                  label="product_length_cm"
-                  value={active.product_length_cm}
-                  onChange={(v) => onUpdateActive({ product_length_cm: v })}
-                />
-                <NumberField
-                  label="product_height_cm"
-                  value={active.product_height_cm}
-                  onChange={(v) => onUpdateActive({ product_height_cm: v })}
-                />
-                <NumberField
-                  label="product_width_cm"
-                  value={active.product_width_cm}
-                  onChange={(v) => onUpdateActive({ product_width_cm: v })}
-                />
-                <NumberField
-                  label="price"
-                  value={active.price}
-                  onChange={(v) => onUpdateActive({ price: v })}
-                />
-                <NumberField
-                  label="freight_value"
-                  value={active.freight_value}
-                  onChange={(v) => onUpdateActive({ freight_value: v })}
-                />
-
-                <TextField
-                  label="customer_state"
-                  value={active.customer_state ?? ""}
-                  onChange={(v) => onUpdateActive({ customer_state: v || null })}
-                  placeholder="SP, RJ, RS..."
-                />
-                <TextField
-                  label="seller_state"
-                  value={active.seller_state ?? ""}
-                  onChange={(v) => onUpdateActive({ seller_state: v || null })}
-                  placeholder="SP, MG..."
-                />
-
-                <TextField
-                  label="product_category_name"
-                  value={active.product_category_name ?? ""}
-                  onChange={(v) => onUpdateActive({ product_category_name: v || null })}
-                  placeholder="beleza_saude..."
-                />
-              </div>
-            </details>
+            </div></div></div>
           </div>
         </details>
       </div>
