@@ -13,6 +13,29 @@ from app.schemas.predict import (
 
 router = APIRouter(prefix="/analyze", tags=["Analyze"])
 
+FEATURE_DESCRIPTIONS: dict[str, str] = {
+    # Logístico
+    "delivery_delta_days":          "Days between promised and actual delivery date (positive = late, negative = early)",
+    "seller_dispatch_days":         "Days the seller took to hand the order to the carrier after purchase",
+    "carrier_transit_days":         "Days the carrier took to deliver after receiving the package",
+    "distance_seller_customer_km":  "Straight-line distance between seller and customer in kilometres",
+    # Financiero
+    "price":                        "Product price in BRL (order total minus shipping cost)",
+    "freight_value":                "Shipping cost paid by the customer in BRL",
+    "payment_value":                "Total order value paid in BRL",
+    "payment_installments":         "Number of payment instalments chosen by the customer",
+    # Producto
+    "product_weight_g":             "Product weight in grams",
+    "product_description_lenght":   "Number of characters in the product description",
+    "product_photos_qty":           "Number of photos in the product listing",
+    # Texto de reseña
+    "char_count":                   "Total number of characters written in the review",
+    "word_count":                   "Total number of words written in the review",
+    "exclamation_count":            "Number of exclamation marks in the review text",
+    "question_count":               "Number of question marks in the review text",
+    "avg_word_length":              "Average word length in the review (longer words may signal more formal complaints)",
+}
+
 
 def _impact_label(shap_val: float, max_abs: float) -> str:
     """Map a SHAP value to a human-readable impact level."""
@@ -87,6 +110,7 @@ def analyze_hybrid(input_data: HybridInput) -> ApiResponse:
     reasons = [
         ReasonSchema(
             factor=c["feature"],
+            description=FEATURE_DESCRIPTIONS.get(c["feature"], c["feature"]),
             value=c["shap_value"],
             impact=_impact_label(c["shap_value"], max_abs),
         )

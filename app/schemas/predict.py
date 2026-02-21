@@ -65,6 +65,7 @@ class HybridInput(BaseModel):
 
 class ReasonSchema(BaseModel):
     factor: str
+    description: str
     value: str | float | int
     impact: str
 
