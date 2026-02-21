@@ -1,56 +1,12 @@
+# Ignorar cosas del grupo
 /env
 /data
-/notebooks/.ipynb_checkpoints
 /__pycache__
-**/__pycache__
-*.pyc
-*.pyo
-*.pyd
-.DCS_Store
-.vscode
-.clinerules
-
-# Flask / API
-.env
-instance/
 *.db
-*.sqlite3
 
-# Testing & coverage
-.coverage
-htmlcov/
-.pytest_cache/
-
-# Model artifacts
-*.pkl
-*.joblib
-*.ubj
-models/
-
-# Logs
-logs/
-*.log
-.DS_Store
-
-# Build artifacts
-*.whl
-*.tar.gz
-dist/
-build/
-*.egg-info/
-.tox/
-
-# MLflow
-mlruns/
-
-# Model artifacts (large binary)
-model_artifacts/
-
-# Package model: trained models (binary, not in git)
-package-model/olist_review_model/trained_models/
-
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/    
-
-#pdf
-*.pdf
+# Ignoradas de Milton
+versionMilton/venv/
+versionMilton/.venv/
+versionMilton/mlartifacts/
+versionMilton/mlflow.db
+versionMilton/__pycache__/
