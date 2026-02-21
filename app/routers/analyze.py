@@ -97,7 +97,7 @@ def _build_features(data: HybridInput) -> dict:
 def analyze_hybrid(input_data: HybridInput) -> ApiResponse:
     """
     Predict customer satisfaction from order data + review text.
-    Returns prediction probability and top SHAP feature contributions as reasons.
+    Returns prediction probability and all SHAP feature contributions as reasons, sorted by absolute impact.
     """
     from olist_review_model.predict import make_prediction_with_shap
 
@@ -115,7 +115,7 @@ def analyze_hybrid(input_data: HybridInput) -> ApiResponse:
             value=round(c["shap_value"] / total_abs * 100, 1),  # signed % of total explanation
             impact=_impact_label(c["shap_value"], max_abs),
         )
-        for c in contributions[:5]
+        for c in contributions
     ]
 
     prediction = PredictionDataSchema(
