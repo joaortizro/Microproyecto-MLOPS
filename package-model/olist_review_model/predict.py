@@ -95,21 +95,21 @@ def make_prediction_with_shap(input_data: dict) -> dict:
     features = config["features"]
 
     X = df[features]
-    proba = model.predict_proba(X)[:, 1][0]
+    proba = round(float(model.predict_proba(X)[:, 1][0]), 4)
     prediction = int(proba >= 0.5)
 
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(X)
 
     contributions = [
-        {"feature": feat, "shap_value": float(np.round(val, 4))}
+        {"feature": feat, "shap_value": round(float(val), 4)}
         for feat, val in zip(features, shap_values[0])
     ]
     contributions.sort(key=lambda x: abs(x["shap_value"]), reverse=True)
 
     return {
         "is_negative": bool(prediction),
-        "probability": float(np.round(proba, 4)),
+        "probability": proba,
         "version": __version__,
         "shap_contributions": contributions,
     }

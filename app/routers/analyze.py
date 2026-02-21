@@ -105,13 +105,14 @@ def analyze_hybrid(input_data: HybridInput) -> ApiResponse:
     result = make_prediction_with_shap(features)
 
     contributions = result["shap_contributions"]
+    total_abs = sum(abs(c["shap_value"]) for c in contributions) or 1.0
     max_abs = max(abs(c["shap_value"]) for c in contributions) if contributions else 1.0
 
     reasons = [
         ReasonSchema(
             factor=c["feature"],
             description=FEATURE_DESCRIPTIONS.get(c["feature"], c["feature"]),
-            value=c["shap_value"],
+            value=round(c["shap_value"] / total_abs * 100, 1),  # signed % of total explanation
             impact=_impact_label(c["shap_value"], max_abs),
         )
         for c in contributions[:5]
