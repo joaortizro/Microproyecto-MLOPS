@@ -2,3 +2,4 @@
     remote = myremote
 ['remote "myremote"']
     url = gdrive://1lwqBXN3eHZHYU7rtN1VxncpCpv0lp3KM
+    profile = newprofile
