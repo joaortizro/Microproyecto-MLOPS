@@ -21,7 +21,9 @@ jobs:
           cache-dependency-path: api_requirements.txt
 
       - name: Install dependencies
-        run: pip install -r api_requirements.txt
+        run: |
+          pip install -r api_requirements.txt
+          pip install -e ./package-model/
 
       - name: Run tests
         run: python -m pytest tests/ -v

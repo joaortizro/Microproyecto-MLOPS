@@ -3,14 +3,17 @@ Feature engineering pipeline.
 Transforms raw Olist data into the 16 features used by the model.
 """
 
-import re
+import json
 import os
+import re
 
 import numpy as np
 import pandas as pd
 import yaml
 
 from olist_review_model import CONFIG_DIR
+
+MEDIANS_FILE = os.path.join(CONFIG_DIR, "feature_medians.json")
 
 
 def load_config():
@@ -156,3 +159,24 @@ def extract_features(df: pd.DataFrame) -> pd.DataFrame:
     features = config["features"]
     X = df[features].fillna(df[features].median())
     return X
+
+
+def save_feature_medians(df: pd.DataFrame) -> None:
+    """Compute and persist feature medians from the training DataFrame.
+
+    Called once during training so the API can use the same imputation values.
+    Saves to package-model/olist_review_model/config/feature_medians.json.
+    """
+    config = load_config()
+    features = config["features"]
+    medians = {feat: round(float(df[feat].median()), 4) for feat in features}
+    with open(MEDIANS_FILE, "w") as f:
+        json.dump(medians, f, indent=2)
+
+
+def load_feature_medians() -> dict:
+    """Load persisted feature medians. Returns empty dict if not yet generated."""
+    if not os.path.exists(MEDIANS_FILE):
+        return {}
+    with open(MEDIANS_FILE) as f:
+        return json.load(f)

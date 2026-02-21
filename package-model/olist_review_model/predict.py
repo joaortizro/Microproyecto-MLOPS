@@ -74,6 +74,47 @@ def _predict(df: pd.DataFrame) -> dict:
     }
 
 
+def make_prediction_with_shap(input_data: dict) -> dict:
+    """
+    Make a prediction with SHAP feature contributions for a single input.
+
+    Returns
+    -------
+    dict with keys:
+        is_negative (bool), probability (float), version (str),
+        shap_contributions (list of {feature, shap_value}), sorted by |shap_value| desc
+    """
+    import shap
+    from olist_review_model import __version__
+
+    validated = DataInputSchema(**input_data)
+    df = pd.DataFrame([validated.model_dump()])
+
+    model = load_model()
+    config = load_config()
+    features = config["features"]
+
+    X = df[features]
+    proba = round(float(model.predict_proba(X)[:, 1][0]), 4)
+    prediction = int(proba >= 0.5)
+
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X)
+
+    contributions = [
+        {"feature": feat, "shap_value": round(float(val), 4)}
+        for feat, val in zip(features, shap_values[0])
+    ]
+    contributions.sort(key=lambda x: abs(x["shap_value"]), reverse=True)
+
+    return {
+        "is_negative": bool(prediction),
+        "probability": proba,
+        "version": __version__,
+        "shap_contributions": contributions,
+    }
+
+
 def _predict_multiple(df: pd.DataFrame) -> dict:
     """Internal: predict multiple rows."""
     from olist_review_model import __version__

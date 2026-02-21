@@ -17,6 +17,7 @@ from olist_review_model.pipeline import (
     build_maestro,
     prepare_training_data,
     extract_features,
+    save_feature_medians,
 )
 
 
@@ -37,6 +38,9 @@ def run_training():
     # --- Features & target ---
     X = extract_features(df_training)
     y = df_training[config["target"]]
+
+    print("Saving feature medians for API inference...")
+    save_feature_medians(df_training)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y,
