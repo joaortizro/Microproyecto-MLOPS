@@ -66,6 +66,7 @@ export function AnalyzeWorkspace() {
   const [predictions, setPredictions] = useState<Prediction[] | null>(null);
 
   const [jsonOpen, setJsonOpen] = useState(false);
+  const [jsonDockVisible, setJsonDockVisible] = useState(true);
 
   const payload = useMemo(() => buildPayload(orders), [orders]);
   const isEmpty = predictions === null;
@@ -125,23 +126,39 @@ export function AnalyzeWorkspace() {
         ].join(" ")}
       />
 
-      <div className="fixed right-6 top-6 z-40 hidden w-[360px] lg:block">
-        {!jsonOpen ? (
-          <div className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-            <p className="text-sm font-semibold text-zinc-900">JSON</p>
-            <p className="mt-1 text-xs text-zinc-600">Ver, copiar o importar el formato.</p>
-            <button
-              type="button"
-              onClick={() => setJsonOpen(true)}
-              className="mt-3 w-full rounded-xl border border-zinc-200 px-3 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
-            >
-              Revisar JSON
-            </button>
-          </div>
-        ) : (
-          <JsonPanel jsonValue={payload} onImport={handleImportJson} onClose={() => setJsonOpen(false)} />
-        )}
+      <div className="fixed right-6 top-6 z-40 hidden w-[340px] lg:block">
+  <div className="rounded-2xl bg-white/95 p-4 shadow-sm ring-1 ring-black/5">
+    <p className="text-sm font-semibold text-[var(--color-dark-purple)]">JSON</p>
+    <p className="mt-1 text-xs text-[rgba(33,11,44,0.72)]">
+      Ver, copiar o importar el formato.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => setJsonOpen((v) => !v)}
+      className={[
+        "mt-3 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl px-4",
+        "whitespace-nowrap text-xs font-semibold text-[var(--color-dark-purple)]",
+        "transition-colors",
+        "hover:bg-[var(--color-purple-soft-12)] active:bg-[var(--color-purple-soft-16)]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-purple-soft-16)]",
+        "focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+      ].join(" ")}
+      aria-label={jsonOpen ? "Cerrar JSON" : "Revisar JSON"}
+      title={jsonOpen ? "Cerrar JSON" : "Revisar JSON"}
+      aria-expanded={jsonOpen}
+    >
+      <FiCode className="h-4 w-4 text-[var(--color-purple)]" aria-hidden="true" />
+      <span>{jsonOpen ? "Cerrar JSON" : "Revisar JSON"}</span>
+    </button>
+
+    {jsonOpen ? (
+      <div className="mt-4">
+        <JsonPanel jsonValue={payload} onImport={handleImportJson} />
       </div>
+    ) : null}
+  </div>
+</div>
 
       {/* MAIN centrado */}
       <div className="relative z-10 mx-auto flex min-h-[calc(100dvh-5rem)] w-full max-w-3xl flex-col">
