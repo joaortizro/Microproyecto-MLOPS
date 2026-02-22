@@ -9,7 +9,9 @@ import { StarRating } from "./StarRating";
 import { JsonPanel } from "./JsonPanel";
 import { PredictionList } from "./PredictionList";
 import BrandMark from "../../components/BrandMark";
-import { FiChevronDown, FiCode, FiSend } from "react-icons/fi";
+import { FiChevronDown, FiCode, FiSend, FiX, FiPlus } from "react-icons/fi";
+import * as Tooltip from "@radix-ui/react-tooltip";
+
 
 function emptyOrder(): OrderInput {
   return {
@@ -323,18 +325,16 @@ function Composer(props: {
         <details className="group">
           <summary
             className={[
-              // que sea un bloque “grande” clickeable
               "block w-full cursor-pointer select-none list-none",
               "[&::-webkit-details-marker]:hidden",
+              "px-4 pb-4 pt-10",
+              "text-center",
               "focus:outline-none",
-              // padding/altura del header morado (ajusta a gusto)
-              "px-4 pb-4 pt-10 text-center",
-              // hover/active sutil para indicar clic
-              "transition-colors hover:bg-white/10 active:bg-white/15",
+              "hover:bg-white/10 active:bg-white/15",
             ].join(" ")}
           >
-            <div className="flex items-center justify-center gap-3">
-        
+            <div className="flex items-center justify-center gap-2">
+              <FiChevronDown className="h-4 w-4 text-[rgba(33,11,44,0.8)]" aria-hidden="true" />
               <p className="text-xs text-[rgba(33,11,44,0.78)]">
                 Haz clic aquí para abrir y editar los detalles de tu orden
               </p>
@@ -342,119 +342,298 @@ function Composer(props: {
           </summary>
 
           <div className="px-4 pb-4">
-            {/* Panel interno blanco para mantener tus fields sin re-estilizarlos */}
-            <div
-  className={[
-    "!block", 
-    "grid grid-rows-[0fr]",
-    "transition-[grid-template-rows] duration-300 ease-out",
-    "group-open:grid-rows-[1fr]",
-    "motion-reduce:transition-none",
-  ].join(" ")}
->
-  <div className="overflow-hidden">
-    <div
-      className={[
-        "px-4 pb-4",
-        "transition-opacity duration-200 ease-out",
-        "opacity-0 group-open:opacity-100",
-        "motion-reduce:transition-none motion-reduce:opacity-100",
-      ].join(" ")}
-    >
-            <div className="rounded-2xl bg-white p-4">
-              {/* 👇 Pega aquí tu contenido actual de detalles tal cual */}
+            <div className="rounded-2xl bg-[var(--color-purple-soft-12)] p-4">
               <div className="space-y-4">
-                {/* Orden selector + add/remove */}
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold text-zinc-700">Orden</span>
-                    <div className="flex gap-1">
-                      {orders.map((_, idx) => (
+                {/* Selector de orden centrado + acciones alineadas */}
+                <div className="flex items-center justify-center gap-2">
+
+                  {/* Círculos centrados */}
+
+                  <div className="flex flex-wrap items-center justify-center gap-2">
+                    {orders.map((_, idx) => {
+                      const isActive = idx === activeIndex;
+
+                      return (
                         <button
                           key={idx}
                           type="button"
                           onClick={() => onSetActiveIndex(idx)}
+                          aria-pressed={isActive}
                           className={[
-                            "rounded-xl px-3 py-1.5 text-xs font-semibold",
-                            idx === activeIndex
-                              ? "bg-zinc-900 text-white"
-                              : "border border-zinc-200 text-zinc-700 hover:bg-zinc-50",
+                            "grid h-3 w-3 place-items-center rounded-full",
+                            "transition-colors",
+                            isActive
+                              ? "bg-[var(--color-accent-yellow)]"
+                              : "bg-white/20 hover:bg-white/30",
+                            // borde visible alrededor
+                            isActive ? "ring-2 ring-[var(--color-dark-purple)]/80" : "ring-1 ring-white/30",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-dark-purple)]/70",
                           ].join(" ")}
+                          title={`Orden ${idx + 1}`}
                         >
-                          {idx + 1}
+                          {/* sin número debajo; sin texto */}
+                          <span className="sr-only">{idx + 1}</span>
                         </button>
-                      ))}
-                    </div>
+                      );
+                    })}
+
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={onAddOrder}
-                      className="rounded-xl border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
-                    >
-                      + Agregar
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onRemoveActiveOrder}
-                      disabled={!canRemove}
-                      className={[
-                        "rounded-xl px-3 py-1.5 text-xs font-semibold",
-                        canRemove
-                          ? "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-                          : "cursor-not-allowed border border-zinc-100 text-zinc-300",
-                      ].join(" ")}
-                    >
-                      Quitar
-                    </button>
-                  </div>
+                  {/* Acciones (derecha) con área hover tipo pill */}
+                  <Tooltip.Provider delayDuration={250}>
+                    <div className="flex items-center gap-2">
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <button
+                            type="button"
+                            onClick={onAddOrder}
+                            className={[
+                              "inline-flex h-5 w-5 items-center justify-center",
+                              "rounded-xl",
+                              "bg-black/20 text-white",
+                              "hover:bg-white/20 active:bg-white/25",
+                              "transition-colors",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+                            ].join(" ")}
+                            aria-label="Agregar orden"
+                          >
+                            <FiPlus className="h-3 w-3" />
+                          </button>
+                        </Tooltip.Trigger>
+
+                        <Tooltip.Content
+                          side="top"
+                          sideOffset={8}
+                          className="rounded-lg bg-zinc-900 px-2 py-1 text-xs font-semibold text-white shadow"
+                        >
+                          Agregar
+                          <Tooltip.Arrow className="fill-zinc-900" />
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <button
+                            type="button"
+                            onClick={onRemoveActiveOrder}
+                            disabled={!canRemove}
+                            className={[
+                              "inline-flex h-5 w-5 items-center justify-center",
+                              "rounded-xl",
+                              "bg-black/20 text-white",
+                              "hover:bg-white/20 active:bg-white/25",
+                              "transition-colors",
+                              "disabled:cursor-not-allowed disabled:opacity-40",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+                            ].join(" ")}
+                            aria-label="Quitar orden"
+                          >
+                            <FiX className="h-3 w-3" />
+                          </button>
+                        </Tooltip.Trigger>
+
+                        <Tooltip.Content
+                          side="top"
+                          sideOffset={8}
+                          className="rounded-lg bg-zinc-900 px-2 py-1 text-xs font-semibold text-white shadow"
+                        >
+                          Quitar
+                          <Tooltip.Arrow className="fill-zinc-900" />
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    </div>
+                  </Tooltip.Provider>
+                </div>
+
+                {/* Mini título debajo (alineado a la izquierda) */}
+                <div className="mt-3">
+                  <p className="text-sm font-semibold text-[rgba(33,11,44,0.85)]">
+                    Orden número {activeIndex + 1}
+                  </p>
                 </div>
 
                 {/* Selects */}
                 <div className="grid gap-3 md:grid-cols-2">
                   <SelectField
                     label="Tipo de pago"
-                    value={active.payment_type ?? "unknown"}
+                    value={(active.payment_type ?? "unknown") as string}
                     options={[
-                      { value: "unknown", label: "Desconocido" },
-                      { value: "credit_card", label: "Tarjeta de crédito" },
-                      { value: "boleto", label: "Boleto" },
-                      { value: "debit_card", label: "Tarjeta débito" },
-                      { value: "pix", label: "Pix" },
+                      { value: "unknown", label: "unknown" },
+                      { value: "credit_card", label: "credit_card" },
+                      { value: "boleto", label: "boleto" },
+                      { value: "debit_card", label: "debit_card" },
+                      { value: "voucher", label: "voucher" },
+                      { value: "not_defined", label: "not_defined" },
                     ]}
                     onChange={(v) => onUpdateActive({ payment_type: v as PaymentType })}
                   />
 
                   <SelectField
                     label="Estado del pedido"
-                    value={active.order_status}
+                    value={(active.order_status ?? "unknown") as string}
                     options={[
-                      { value: "unknown", label: "Desconocido" },
-                      { value: "created", label: "Creado" },
-                      { value: "approved", label: "Aprobado" },
-                      { value: "processing", label: "Procesando" },
-                      { value: "shipped", label: "Enviado" },
-                      { value: "delivered", label: "Entregado" },
-                      { value: "canceled", label: "Cancelado" },
+                      { value: "unknown", label: "unknown" },
+                      { value: "created", label: "created" },
+                      { value: "approved", label: "approved" },
+                      { value: "processing", label: "processing" },
+                      { value: "invoiced", label: "invoiced" },
+                      { value: "shipped", label: "shipped" },
+                      { value: "delivered", label: "delivered" },
+                      { value: "canceled", label: "canceled" },
+                      { value: "unavailable", label: "unavailable" },
                     ]}
                     onChange={(v) => onUpdateActive({ order_status: v as OrderStatus })}
                   />
                 </div>
 
                 {/* Advanced */}
-                <details className="rounded-2xl border border-zinc-200 p-3">
-                  <summary className="cursor-pointer select-none text-sm font-semibold text-zinc-900 hover:text-zinc-950">
-                    Advanced fields
+                <details className="group/adv rounded-2xl bg-[rgba(33,11,44,0.08)] p-3">
+                  <summary
+                    className={[
+                      "block w-full cursor-pointer select-none list-none",
+                      "[&::-webkit-details-marker]:hidden",
+                      "rounded-2xl",
+                      "px-4 py-3",
+                      "text-center",
+                      "transition-colors",
+                      "hover:bg-white/10 active:bg-white/15",
+                      "focus:outline-none",
+                    ].join(" ")}
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <FiChevronDown
+                        className="h-4 w-4 text-[rgba(33,11,44,0.85)] transition-transform group-open/adv:rotate-180"
+                        aria-hidden="true"
+                      />
+                      <p className="text-xs text-[rgba(33,11,44,0.82)]">
+                        Haz clic aquí para añadir <span className="font-bold">más datos</span> y aumentar la{" "}
+                        <span className="font-bold">confianza</span> de la predicción.
+                      </p>
+                    </div>
+
+                    <p className="mt-1 text-[11px] text-[rgba(33,11,44,0.68)]">
+                      (Opcional) Entre más completo esté, mejor contexto tendrá el modelo.
+                    </p>
                   </summary>
 
-                  <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    {/* ...tu contenido actual igual... */}
+                  <div className="mt-4 space-y-5 pt-2">
+                    {/* Group: Order */}
+                    <div>
+
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <TextField
+                          label="order_id"
+                          value={active.order_id ?? ""}
+                          placeholder="—"
+                          onChange={(v) => onUpdateActive({ order_id: v.trim() ? v : null })}
+                        />
+
+                        <TextField
+                          label="product_category_name"
+                          value={active.product_category_name ?? ""}
+                          placeholder="—"
+                          onChange={(v) => onUpdateActive({ product_category_name: v.trim() ? v : null })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Group: Dates */}
+                    <div>
+                      <p className="mb-2 text-xs font-bold tracking-wide text-zinc-600">Dates</p>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <TextField
+                          label="order_purchase_timestamp"
+                          value={active.order_purchase_timestamp ?? ""}
+                          placeholder="YYYY-MM-DDTHH:mm:ss"
+                          onChange={(v) => onUpdateActive({ order_purchase_timestamp: v.trim() ? v : null })}
+                        />
+                        <TextField
+                          label="order_approved_at"
+                          value={active.order_approved_at ?? ""}
+                          placeholder="YYYY-MM-DDTHH:mm:ss"
+                          onChange={(v) => onUpdateActive({ order_approved_at: v.trim() ? v : null })}
+                        />
+                        <TextField
+                          label="order_delivered_carrier_date"
+                          value={active.order_delivered_carrier_date ?? ""}
+                          placeholder="YYYY-MM-DDTHH:mm:ss"
+                          onChange={(v) => onUpdateActive({ order_delivered_carrier_date: v.trim() ? v : null })}
+                        />
+                        <TextField
+                          label="order_delivered_customer_date"
+                          value={active.order_delivered_customer_date ?? ""}
+                          placeholder="YYYY-MM-DDTHH:mm:ss"
+                          onChange={(v) => onUpdateActive({ order_delivered_customer_date: v.trim() ? v : null })}
+                        />
+                        <TextField
+                          label="order_estimated_delivery_date"
+                          value={active.order_estimated_delivery_date ?? ""}
+                          placeholder="YYYY-MM-DD"
+                          onChange={(v) => onUpdateActive({ order_estimated_delivery_date: v.trim() ? v : null })}
+                        />
+                        <TextField
+                          label="shipping_limit_date"
+                          value={active.shipping_limit_date ?? ""}
+                          placeholder="YYYY-MM-DDTHH:mm:ss"
+                          onChange={(v) => onUpdateActive({ shipping_limit_date: v.trim() ? v : null })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Group: Product / Costs */}
+                    <div>
+                      <p className="mb-2 text-xs font-bold tracking-wide text-zinc-600">Product / Costs</p>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <NumberField
+                          label="product_length_cm"
+                          value={active.product_length_cm}
+                          onChange={(v) => onUpdateActive({ product_length_cm: v })}
+                        />
+                        <NumberField
+                          label="product_height_cm"
+                          value={active.product_height_cm}
+                          onChange={(v) => onUpdateActive({ product_height_cm: v })}
+                        />
+                        <NumberField
+                          label="product_width_cm"
+                          value={active.product_width_cm}
+                          onChange={(v) => onUpdateActive({ product_width_cm: v })}
+                        />
+                        <NumberField
+                          label="price"
+                          value={active.price}
+                          onChange={(v) => onUpdateActive({ price: v })}
+                        />
+                        <NumberField
+                          label="freight_value"
+                          value={active.freight_value}
+                          onChange={(v) => onUpdateActive({ freight_value: v })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Group: Location */}
+                    <div>
+                      <p className="mb-2 text-xs font-bold tracking-wide text-zinc-600">Location</p>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <TextField
+                          label="customer_state"
+                          value={active.customer_state ?? ""}
+                          placeholder="e.g. SP"
+                          onChange={(v) => onUpdateActive({ customer_state: v.trim() ? v : null })}
+                        />
+                        <TextField
+                          label="seller_state"
+                          value={active.seller_state ?? ""}
+                          placeholder="e.g. RJ"
+                          onChange={(v) => onUpdateActive({ seller_state: v.trim() ? v : null })}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </details>
               </div>
             </div>
-            </div></div></div>
           </div>
         </details>
       </div>
@@ -471,19 +650,36 @@ function SelectField(props: {
   const { label, value, options, onChange } = props;
 
   return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold text-zinc-700">{label}</label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold text-[rgba(33,11,44,0.78)]">
+        {label}
+      </label>
+
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={[
+            "appearance-none", // 👈 quita el icono nativo
+            "h-10 w-full rounded-2xl px-3 pr-9 text-sm",
+            "bg-white/95 text-[var(--color-dark-purple)]",
+            "ring-1 ring-black/5",
+            "outline-none transition-shadow",
+            "focus-visible:ring-2 focus-visible:ring-[var(--color-purple-soft-16)]",
+          ].join(" ")}
+        >
+          {options.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
+
+        <FiChevronDown
+          aria-hidden="true"
+          className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[rgba(33,11,44,0.55)]"
+        />
+      </div>
     </div>
   );
 }
@@ -495,14 +691,25 @@ function TextField(props: {
   onChange: (v: string) => void;
 }) {
   const { label, value, placeholder, onChange } = props;
+
   return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold text-zinc-700">{label}</label>
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold text-[rgba(33,11,44,0.78)]">
+        {label}
+      </label>
+
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+        className={[
+          "h-10 w-full rounded-2xl px-3 text-sm",
+          "bg-white/95 text-[var(--color-dark-purple)]",
+          "placeholder:text-[rgba(33,11,44,0.40)]",
+          "ring-1 ring-black/5",
+          "outline-none transition-shadow",
+          "focus-visible:ring-2 focus-visible:ring-[var(--color-purple-soft-16)]",
+        ].join(" ")}
       />
     </div>
   );
@@ -516,8 +723,11 @@ function NumberField(props: {
   const { label, value, onChange } = props;
 
   return (
-    <div>
-      <label className="mb-1 block text-xs font-semibold text-zinc-700">{label}</label>
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold text-[rgba(33,11,44,0.78)]">
+        {label}
+      </label>
+
       <input
         inputMode="decimal"
         value={value === null ? "" : String(value)}
@@ -528,7 +738,14 @@ function NumberField(props: {
           onChange(Number.isFinite(n) ? n : null);
         }}
         placeholder="—"
-        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:ring-2 focus:ring-zinc-900/10"
+        className={[
+          "h-10 w-full rounded-2xl px-3 text-sm",
+          "bg-white/95 text-[var(--color-dark-purple)]",
+          "placeholder:text-[rgba(33,11,44,0.40)]",
+          "ring-1 ring-black/5",
+          "outline-none transition-shadow",
+          "focus-visible:ring-2 focus-visible:ring-[var(--color-purple-soft-16)]",
+        ].join(" ")}
       />
     </div>
   );
