@@ -1,4 +1,6 @@
+# Ignorar cosas del grupo
 /env
+.venv
 /data
 /notebooks/.ipynb_checkpoints
 /__pycache__
@@ -6,9 +8,10 @@
 *.pyc
 *.pyo
 *.pyd
-.DCS_Store
+.DS_Store
 .vscode
 .clinerules
+*.code-workspace
 
 # Flask / API
 .env
@@ -24,16 +27,37 @@ htmlcov/
 # Model artifacts
 *.pkl
 *.joblib
+*.ubj
 models/
+model_artifacts/
+
+# Package model: trained models (binary, not in git)
+package-model/olist_review_model/trained_models/
 
 # Logs
 logs/
 *.log
-*.tox
-.tox/
-.DS_Store
+
+# Build artifacts
 *.whl
+*.tar.gz
+dist/
+build/
+*.egg-info/
+.tox/
+
+# MLflow
+mlruns/
 
 # Jupyter Notebook checkpoints
-.ipynb_checkpoints/    
+.ipynb_checkpoints/
 
+# PDFs
+*.pdf
+
+# Ignoradas de Milton (carpeta aislada)
+versionMilton/venv/
+versionMilton/.venv/
+versionMilton/mlartifacts/
+versionMilton/mlflow.db
+versionMilton/__pycache__/
