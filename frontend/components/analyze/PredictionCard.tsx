@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FiStar } from "react-icons/fi";
+import { FaRegStar, FaStar } from "react-icons/fa";
+import { FiArrowUpRight } from "react-icons/fi";
 import type { OrderInput } from "../../types/order";
 import type { Prediction } from "../../types/prediction";
 import { PredictionExplanationModal } from "./PredictionExplanationModal";
@@ -29,17 +30,17 @@ function formatMoney(n: number | null) {
 
 function StarsReadOnly({ value }: { value: number | null }) {
   const v = value ?? 0;
+
   return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <FiStar
-          key={n}
-          className={[
-            "h-4 w-4",
-            v >= n ? "text-amber-500" : "text-zinc-300",
-          ].join(" ")}
-        />
-      ))}
+    <div className="flex items-center gap-0.5" aria-label={`Review score: ${value ?? "N/A"} out of 5`}>
+      {[1, 2, 3, 4, 5].map((n) => {
+        const filled = v >= n;
+        return filled ? (
+          <FaStar key={n} className="h-4 w-4 text-[var(--color-accent-yellow)]" />
+        ) : (
+          <FaRegStar key={n} className="h-4 w-4 text-[rgba(33,11,44,0.18)]" />
+        );
+      })}
     </div>
   );
 }
@@ -49,13 +50,7 @@ export function PredictionCard({ order, prediction, index }: Props) {
 
   const sentiment = sentimentFrom(prediction);
   const confidence = confidencePercent(prediction);
-
   const isPositive = sentiment === "positive";
-
-  const rail = isPositive ? "border-emerald-500" : "border-red-500";
-  const badge = isPositive
-    ? "bg-emerald-50 text-emerald-700"
-    : "bg-red-50 text-red-700";
 
   const orderId = order?.order_id?.trim() ? order.order_id : null;
 
@@ -73,58 +68,102 @@ export function PredictionCard({ order, prediction, index }: Props) {
   const price = formatMoney(order?.price ?? null);
   const freight = formatMoney(order?.freight_value ?? null);
 
+  // Positive = verde, Negative = rojo
+  const accentBar = isPositive ? "before:bg-emerald-500" : "before:bg-red-500";
+  const sentimentPill = isPositive ? "bg-emerald-500 text-white" : "bg-red-500 text-white";
+  const confidenceFill = isPositive ? "bg-emerald-500" : "bg-red-500";
+
+  const chipBase =
+    "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-black/5";
+
   return (
     <>
-      <div className={`rounded-3xl border border-zinc-200 bg-white shadow-sm border-l-4 ${rail}`}>
-        <div className="p-5">
-          {/* Top row */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <StarsReadOnly value={order?.review_score ?? null} />
-                <span className="text-sm font-semibold text-zinc-900">{orderLabel}</span>
-              </div>
+      <div
+        className={[
+          "relative overflow-hidden rounded-3xl bg-white/95 shadow-sm ring-1 ring-black/5",
+          // Barra izquierda inset
+          "before:absolute before:left-4 before:top-4 before:bottom-4 before:w-2 before:rounded-full",
+          accentBar,
+        ].join(" ")}
+      >
+        {/* Más espacio después de la barra */}
+        <div className="px-5 py-5 pl-12">
+          {/* Top: estrellas izquierda, order centrado, pill derecha */}
+          <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
+            <StarsReadOnly value={order?.review_score ?? null} />
 
-              <div className="text-xs text-zinc-600">
-                <span className="font-semibold text-zinc-700">Confidence:</span> {confidence}%
-              </div>
+            <div className="min-w-0 text-center">
+              <span className="truncate text-sm font-semibold text-[var(--color-dark-purple)]">
+                {orderLabel}
+              </span>
             </div>
 
-            <div className={`rounded-full px-3 py-1 text-xs font-semibold ${badge}`}>
-              {sentiment}
+            <div
+              className={[
+                "shrink-0 rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-black/10",
+                sentimentPill,
+              ].join(" ")}
+              aria-label={`Sentiment: ${sentiment}`}
+            >
+              {isPositive ? "Positive" : "Negative"}
+            </div>
+          </div>
+
+          {/* Confidence */}
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-[rgba(33,11,44,0.72)]">
+              <span className="font-semibold text-[rgba(33,11,44,0.82)]">Confidence</span>
+              <span className="tabular-nums">{confidence}%</span>
+            </div>
+
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[var(--color-dark-purple-soft-08)] ring-1 ring-black/5">
+              <div
+                className={["h-full rounded-full", confidenceFill].join(" ")}
+                style={{ width: `${confidence}%` }}
+                aria-hidden="true"
+              />
             </div>
           </div>
 
           {/* Message */}
           <div className="mt-4">
-            <p className="text-sm font-semibold text-zinc-900">Message</p>
-            <p className="mt-1 text-sm text-zinc-700 whitespace-pre-wrap">{message}</p>
+            <p className="text-sm font-semibold text-[var(--color-dark-purple)]">Message</p>
+            <p className="mt-1 whitespace-pre-wrap text-sm text-[rgba(33,11,44,0.78)]">{message}</p>
           </div>
 
-          {/* extra info */}
+          {/* Extra info */}
           <div className="mt-4 flex flex-wrap gap-2 text-xs">
-            <span className="rounded-full bg-zinc-50 px-3 py-1 font-semibold text-zinc-700">
+            <span className={`${chipBase} bg-[var(--color-purple-soft-12)] text-[var(--color-dark-purple)]`}>
               {states}
             </span>
-            <span className="rounded-full bg-zinc-50 px-3 py-1 font-semibold text-zinc-700">
-              payment: {payment}
+            <span className={`${chipBase} bg-[var(--color-purple-soft-12)] text-[var(--color-dark-purple)]`}>
+              payment: <span className="ml-1 tabular-nums">{payment}</span>
             </span>
-            <span className="rounded-full bg-zinc-50 px-3 py-1 font-semibold text-zinc-700">
-              price: {price}
+            <span className={`${chipBase} bg-[var(--color-purple-soft-12)] text-[var(--color-dark-purple)]`}>
+              price: <span className="ml-1 tabular-nums">{price}</span>
             </span>
-            <span className="rounded-full bg-zinc-50 px-3 py-1 font-semibold text-zinc-700">
-              freight: {freight}
+            <span className={`${chipBase} bg-[var(--color-purple-soft-12)] text-[var(--color-dark-purple)]`}>
+              freight: <span className="ml-1 tabular-nums">{freight}</span>
             </span>
           </div>
 
-          {/* CTA */}
-          <div className="mt-5 flex justify-end">
+          {/* CTA (morado oscuro + blanco) */}
+          <div className="mt-5 flex justify-start">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="rounded-xl border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+              aria-haspopup="dialog"
+              aria-expanded={open}
+              className={[
+                "inline-flex h-9 items-center gap-2 rounded-xl px-4",
+                "bg-[var(--color-dark-purple)] text-white shadow-sm ring-1 ring-black/10",
+                "transition-colors hover:bg-[rgba(33,11,44,0.92)] active:bg-[rgba(33,11,44,0.86)]",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-purple-soft-16)]",
+                "focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+              ].join(" ")}
             >
-              View Full Explanation
+              View Explanation
+              <FiArrowUpRight className="h-4 w-4 opacity-90" aria-hidden="true" />
             </button>
           </div>
         </div>
