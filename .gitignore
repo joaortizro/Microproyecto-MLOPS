@@ -40,11 +40,12 @@ logs/
 
 # Build artifacts
 *.tar.gz
-dist/
 build/
 *.egg-info/
 .tox/
-# Keep model wheel in git for deployment (no retraining needed)
+# Ignore dist everywhere except the model wheel needed for deployment
+dist/
+!package-model/dist/
 !package-model/dist/*.whl
 
 # MLflow
