@@ -1,47 +1,37 @@
-
-export type OrderStatus =
-  | "created"
-  | "approved"
-  | "processing"
-  | "shipped"
-  | "delivered"
-  | "canceled"
-  | "unknown";
-
-export type PaymentType = "credit_card" | "boleto" | "debit_card" | "pix" | "unknown";
-
-export type OrderInput = {
-  // Required-ish (pero permitimos null para demo/import)
-  order_purchase_timestamp: string | null;
-  order_approved_at: string | null;
-  order_delivered_carrier_date: string | null;
-  order_delivered_customer_date: string | null;
-  order_estimated_delivery_date: string | null;
-  shipping_limit_date: string | null;
-
-  // Product / financial
-  product_length_cm: number | null;
-  product_height_cm: number | null;
-  product_width_cm: number | null;
-  price: number | null;
-  freight_value: number | null;
-
-  // Location / meta
-  customer_state: string | null;
-  seller_state: string | null;
-  payment_type: PaymentType | null;
-  product_category_name: string | null;
-
-  // Requested extra fields (main)
-  review_score: number | null; // 0..5
-  review_comment_message: string;
-  order_status: OrderStatus;
-
-  
-  order_id: string | null;
-
+export type DeliveryInput = {
+  purchase_date: string | null;
+  promised_date: string | null;
+  dispatched_date: string | null;
+  delivered_date: string | null;
 };
 
-export type SingleOrderPayload = { order: { order: OrderInput } | OrderInput };
-export type BatchOrderPayload = { orders: OrderInput[] };
-export type AnalyzePayload = SingleOrderPayload | BatchOrderPayload;
+export type FinancialsInput = {
+  order_total: number | null;
+  shipping_cost: number | null;
+  payment_installments: number | null;
+  currency: string | null;
+};
+
+export type LocationInput = {
+  distance_km: number | null;
+};
+
+export type ItemInput = {
+  weight_g: number | null;
+  description_length: number | null;
+  media_count: number | null;
+};
+
+export type ReviewInput = {
+  text: string;
+};
+
+export type OrderInput = {
+  delivery: DeliveryInput;
+  financials: FinancialsInput;
+  location: LocationInput;
+  item: ItemInput;
+  review: ReviewInput;
+};
+
+export type AnalyzePayload = OrderInput;

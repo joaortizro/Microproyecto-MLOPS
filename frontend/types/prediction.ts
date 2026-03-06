@@ -1,12 +1,28 @@
-export type Prediction = {
-  prediction: 0 | 1;
-  label: "SATISFECHO" | "NO_SATISFECHO";
-  probability_satisfied: number; // 0..1
-  probability_not_satisfied: number; // 0..1
+import type { OrderInput } from "./order";
+
+export type PredictionSentiment = "positive" | "negative";
+
+export type PredictionReason = {
+  factor: string;
+  description: string;
+  value: number;
+  impact: "high" | "medium" | "low" | string;
 };
 
-export type SinglePredictionResponse = Prediction;
+export type Prediction = {
+  predicted_score: number;
+  negative_probability: number;
+  sentiment: PredictionSentiment;
+  confidence: number;
+  reasons: PredictionReason[];
+  status?: string;
+  timestamp?: string;
+};
 
-export type BatchPredictionResponse = {
-  predictions: Prediction[];
+export type StoredPrediction = {
+  id: string;
+  order: OrderInput;
+  prediction: Prediction;
+  raw_response: unknown;
+  created_at: string;
 };
