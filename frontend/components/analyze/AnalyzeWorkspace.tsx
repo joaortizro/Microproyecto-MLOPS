@@ -600,6 +600,78 @@ function Composer(props: {
                       }
                     />
                   </div>
+
+                  {/* Acciones (derecha) con área hover tipo pill */}
+                  <Tooltip.Provider delayDuration={250}>
+                    <div className="flex items-center gap-2">
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <button
+                            type="button"
+                            onClick={onAddOrder}
+                            className={[
+                              "inline-flex h-5 w-5 items-center justify-center",
+                              "rounded-xl",
+                              "bg-black/20 text-white",
+                              "hover:bg-white/20 active:bg-white/25",
+                              "transition-colors",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+                            ].join(" ")}
+                            aria-label="Agregar orden"
+                          >
+                            <FiPlus className="h-3 w-3" />
+                          </button>
+                        </Tooltip.Trigger>
+
+                        <Tooltip.Content
+                          side="top"
+                          sideOffset={8}
+                          className="rounded-lg bg-zinc-900 px-2 py-1 text-xs font-semibold text-white shadow"
+                        >
+                          Agregar
+                          <Tooltip.Arrow className="fill-zinc-900" />
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+
+                      <Tooltip.Root>
+                        <Tooltip.Trigger asChild>
+                          <button
+                            type="button"
+                            onClick={onRemoveActiveOrder}
+                            disabled={!canRemove}
+                            className={[
+                              "inline-flex h-5 w-5 items-center justify-center",
+                              "rounded-xl",
+                              "bg-black/20 text-white",
+                              "hover:bg-white/20 active:bg-white/25",
+                              "transition-colors",
+                              "disabled:cursor-not-allowed disabled:opacity-40",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+                            ].join(" ")}
+                            aria-label="Quitar orden"
+                          >
+                            <FiX className="h-3 w-3" />
+                          </button>
+                        </Tooltip.Trigger>
+
+                        <Tooltip.Content
+                          side="top"
+                          sideOffset={8}
+                          className="rounded-lg bg-zinc-900 px-2 py-1 text-xs font-semibold text-white shadow"
+                        >
+                          Quitar
+                          <Tooltip.Arrow className="fill-zinc-900" />
+                        </Tooltip.Content>
+                      </Tooltip.Root>
+                    </div>
+                  </Tooltip.Provider>
+                </div>
+
+                {/* Mini título debajo (alineado a la izquierda) */}
+                <div className="mt-3">
+                  <p className="text-sm font-semibold text-[rgba(33,11,44,0.85)]">
+                    Orden número {activeIndex + 1}
+                  </p>
                 </div>
 
                 <div>

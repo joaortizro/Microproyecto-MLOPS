@@ -12,13 +12,15 @@ Built on the [Olist Brazilian E-Commerce dataset](https://www.kaggle.com/dataset
 git clone https://github.com/joaortizro/Microproyecto-MLOPS.git
 cd Microproyecto-MLOPS
 
-python -m venv env
+python3 -m venv env
 source env/bin/activate
 
 pip install -r api_requirements.txt
-pip install -e ./package-model/   # installs the model package in editable mode
+pip install package-model/dist/olist_review_model-0.1.0-py3-none-any.whl
 cp .env.example .env
 ```
+
+> The `.whl` file bundles the trained model — no retraining required.
 
 ## Run
 
@@ -28,8 +30,8 @@ python run.py
 
 | URL | Description |
 |-----|-------------|
-| `http://localhost:5000/health` | Liveness check |
-| `http://localhost:5000/apidocs` | Swagger UI |
+| `http://localhost:8000/health` | Liveness check |
+| `http://localhost:8000/docs` | Swagger UI |
 
 ## Test
 
@@ -93,21 +95,25 @@ python -m pytest tests/ -v
 ```bash
 cd package-model
 
-# 1. Train the model
+# 1. Train the model (requires data/ CSVs — see DVC section below)
 tox run -e train
 
 # 2. Run tests
 tox run -e test_package
 
-# 3. Build distributable package
-pip install build
-python -m build
+# 3. Build distributable package (bundles trained model inside)
+python3 -m pip install --upgrade build
+python3 -m build
 # → dist/olist_review_model-0.1.0.tar.gz
 # → dist/olist_review_model-0.1.0-py3-none-any.whl
 
-# 4. Install the package
-pip install dist/olist_review_model-0.1.0-py3-none-any.whl
+# 4. Commit the wheel so teammates can install without retraining
+git add -f dist/olist_review_model-0.1.0-py3-none-any.whl
+git commit -m "update model wheel v0.1.0"
+git push
 ```
+
+> After pushing, anyone can run `pip install package-model/dist/olist_review_model-0.1.0-py3-none-any.whl` — no data or training needed.
 
 ### MLflow Experiments
 

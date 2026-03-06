@@ -41,6 +41,14 @@ export function PredictionCard({ item, index }: Props) {
   const chipBase =
     "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-black/5";
 
+  // Positive = verde, Negative = rojo
+  const accentBar = isPositive ? "before:bg-emerald-500" : "before:bg-red-500";
+  const sentimentPill = isPositive ? "bg-emerald-500 text-white" : "bg-red-500 text-white";
+  const confidenceFill = isPositive ? "bg-emerald-500" : "bg-red-500";
+
+  const chipBase =
+    "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ring-1 ring-black/5";
+
   return (
     <>
       <div

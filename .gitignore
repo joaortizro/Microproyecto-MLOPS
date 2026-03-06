@@ -39,12 +39,14 @@ logs/
 *.log
 
 # Build artifacts
-*.whl
 *.tar.gz
-dist/
 build/
 *.egg-info/
 .tox/
+# Ignore dist everywhere except the model wheel needed for deployment
+dist/
+!package-model/dist/
+!package-model/dist/*.whl
 
 # MLflow
 mlruns/
