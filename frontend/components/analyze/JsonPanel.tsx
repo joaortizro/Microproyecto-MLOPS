@@ -71,7 +71,7 @@ export function JsonPanel(props: JsonPanelProps) {
         <textarea
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
-          placeholder='Pega {"order": {...}} o {"orders":[...]} y presiona Apply'
+          placeholder='Pega {"delivery":...} o {"order": {...}} o {"orders":[...]} y presiona Apply'
           className={[
             "min-h-[96px] w-full resize-y rounded-xl bg-white p-3 text-xs",
             "text-[var(--color-dark-purple)] ring-1 ring-black/5",
