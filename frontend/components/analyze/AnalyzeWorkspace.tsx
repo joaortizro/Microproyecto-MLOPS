@@ -8,7 +8,6 @@ import { JsonPanel } from "./JsonPanel";
 import BrandMark from "../../components/BrandMark";
 import { FiChevronDown, FiCode, FiLoader, FiSend } from "react-icons/fi";
 
-const DEFAULT_API_BASE_URL = "http://localhost:8000";
 const STORAGE_KEY = "hybrid_prediction_history_v1";
 
 type ViewMode = "form" | "predictions";
@@ -89,8 +88,32 @@ function parseImported(value: unknown): OrderInput | null {
   return null;
 }
 
-function getApiBaseUrl() {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, "");
+function normalizeOrderPayload(order: OrderInput): OrderInput {
+  return {
+    delivery: {
+      purchase_date: order.delivery.purchase_date ?? "",
+      promised_date: order.delivery.promised_date ?? "",
+      dispatched_date: order.delivery.dispatched_date ?? "",
+      delivered_date: order.delivery.delivered_date ?? "",
+    },
+    financials: {
+      order_total: order.financials.order_total,
+      shipping_cost: order.financials.shipping_cost,
+      payment_installments: order.financials.payment_installments,
+      currency: order.financials.currency ?? "",
+    },
+    location: {
+      distance_km: order.location.distance_km,
+    },
+    item: {
+      weight_g: order.item.weight_g,
+      description_length: order.item.description_length,
+      media_count: order.item.media_count,
+    },
+    review: {
+      text: order.review.text ?? "",
+    },
+  };
 }
 
 function clamp01(n: number) {
@@ -210,15 +233,14 @@ export function AnalyzeWorkspace() {
     setIsSending(true);
 
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const url = `${apiBaseUrl}/analyze/hybrid`;
+      const payload = normalizeOrderPayload(order);
 
-      const res = await fetch(url, {
+      const res = await fetch("/api/analyze/hybrid", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(order),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
