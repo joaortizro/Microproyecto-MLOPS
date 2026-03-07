@@ -1,6 +1,8 @@
 [core]
-    remote = storage
+    remote = storage-ecom
 ['remote "myremote"']
     url = gdrive://1lwqBXN3eHZHYU7rtN1VxncpCpv0lp3KM
 ['remote "storage"']
     url = gdrive://13dJooURa20UdMuR3jk8ffSCUDIVvkxbm
+['remote "storage-ecom"']
+    url = s3://e-comerce-storage
